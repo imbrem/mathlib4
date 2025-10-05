@@ -201,6 +201,7 @@ theorem yang_baxter (X Y Z : C) :
   repeat rw [assoc]
   rw [Iso.hom_inv_id, comp_id, ← braiding_naturality_right, braiding_tensor_right_hom]
 
+@[to_additive]
 theorem yang_baxter' (X Y Z : C) :
     (β_ X Y).hom ▷ Z ⊗≫ Y ◁ (β_ X Z).hom ⊗≫ (β_ Y Z).hom ▷ X =
       𝟙 _ ⊗≫ (X ◁ (β_ Y Z).hom ⊗≫ (β_ X Z).hom ▷ Y ⊗≫ Z ◁ (β_ X Y).hom) ⊗≫ 𝟙 _ := by
@@ -208,6 +209,7 @@ theorem yang_baxter' (X Y Z : C) :
   convert yang_baxter X Y Z using 1
   all_goals monoidal
 
+@[to_additive]
 theorem yang_baxter_iso (X Y Z : C) :
     (α_ X Y Z).symm ≪≫ whiskerRightIso (β_ X Y) Z ≪≫ α_ Y X Z ≪≫
     whiskerLeftIso Y (β_ X Z) ≪≫ (α_ Y Z X).symm ≪≫
@@ -216,23 +218,25 @@ theorem yang_baxter_iso (X Y Z : C) :
       whiskerRightIso (β_ X Z) Y ≪≫ α_ Z X Y ≪≫
       whiskerLeftIso Z (β_ X Y) := Iso.ext (yang_baxter X Y Z)
 
+@[to_additive]
 theorem hexagon_forward_iso (X Y Z : C) :
     α_ X Y Z ≪≫ β_ X (Y ⊗ Z) ≪≫ α_ Y Z X =
       whiskerRightIso (β_ X Y) Z ≪≫ α_ Y X Z ≪≫ whiskerLeftIso Y (β_ X Z) :=
   Iso.ext (hexagon_forward X Y Z)
 
+@[to_additive]
 theorem hexagon_reverse_iso (X Y Z : C) :
     (α_ X Y Z).symm ≪≫ β_ (X ⊗ Y) Z ≪≫ (α_ Z X Y).symm =
       whiskerLeftIso X (β_ Y Z) ≪≫ (α_ X Z Y).symm ≪≫ whiskerRightIso (β_ X Z) Y :=
   Iso.ext (hexagon_reverse X Y Z)
 
-@[reassoc]
+@[reassoc (attr := to_additive)]
 theorem hexagon_forward_inv (X Y Z : C) :
     (α_ Y Z X).inv ≫ (β_ X (Y ⊗ Z)).inv ≫ (α_ X Y Z).inv =
       Y ◁ (β_ X Z).inv ≫ (α_ Y X Z).inv ≫ (β_ X Y).inv ▷ Z := by
   simp
 
-@[reassoc]
+@[reassoc (attr := to_additive)]
 theorem hexagon_reverse_inv (X Y Z : C) :
     (α_ Z X Y).hom ≫ (β_ (X ⊗ Y) Z).inv ≫ (α_ X Y Z).hom =
       (β_ X Z).inv ▷ Y ≫ (α_ X Z Y).hom ≫ X ◁ (β_ Y Z).inv := by
@@ -315,12 +319,14 @@ I couldn't find a detailed proof in print, but this is discussed in:
 
 variable {C : Type u₁} [Category.{v₁} C] [MonoidalCategory C] [BraidedCategory C]
 
+@[to_additive]
 theorem braiding_leftUnitor_aux₁ (X : C) :
     (α_ (𝟙_ C) (𝟙_ C) X).hom ≫
         (𝟙_ C ◁ (β_ X (𝟙_ C)).inv) ≫ (α_ _ X _).inv ≫ ((λ_ X).hom ▷ _) =
       ((λ_ _).hom ▷ X) ≫ (β_ X (𝟙_ C)).inv := by
   monoidal
 
+@[to_additive]
 theorem braiding_leftUnitor_aux₂ (X : C) :
     ((β_ X (𝟙_ C)).hom ▷ 𝟙_ C) ≫ ((λ_ X).hom ▷ 𝟙_ C) = (ρ_ X).hom ▷ 𝟙_ C :=
   calc
@@ -338,16 +344,18 @@ theorem braiding_leftUnitor_aux₂ (X : C) :
     _ = (α_ _ _ _).hom ≫ (_ ◁ (λ_ _).hom) := by rw [Iso.hom_inv_id, comp_id]
     _ = (ρ_ X).hom ▷ 𝟙_ C := by rw [triangle]
 
-@[reassoc]
+@[reassoc (attr := to_additive)]
 theorem braiding_leftUnitor (X : C) : (β_ X (𝟙_ C)).hom ≫ (λ_ X).hom = (ρ_ X).hom := by
   rw [← whiskerRight_iff, comp_whiskerRight, braiding_leftUnitor_aux₂]
 
+@[to_additive]
 theorem braiding_rightUnitor_aux₁ (X : C) :
     (α_ X (𝟙_ C) (𝟙_ C)).inv ≫
         ((β_ (𝟙_ C) X).inv ▷ 𝟙_ C) ≫ (α_ _ X _).hom ≫ (_ ◁ (ρ_ X).hom) =
       (X ◁ (ρ_ _).hom) ≫ (β_ (𝟙_ C) X).inv := by
   simp
 
+@[to_additive]
 theorem braiding_rightUnitor_aux₂ (X : C) :
     (𝟙_ C ◁ (β_ (𝟙_ C) X).hom) ≫ (𝟙_ C ◁ (ρ_ X).hom) = 𝟙_ C ◁ (λ_ X).hom :=
   calc
@@ -366,38 +374,42 @@ theorem braiding_rightUnitor_aux₂ (X : C) :
     _ = (α_ _ _ _).inv ≫ ((ρ_ _).hom ▷ _) := by rw [Iso.hom_inv_id, comp_id]
     _ = 𝟙_ C ◁ (λ_ X).hom := by rw [triangle_assoc_comp_right]
 
-@[reassoc]
+@[reassoc (attr := to_additive)]
 theorem braiding_rightUnitor (X : C) : (β_ (𝟙_ C) X).hom ≫ (ρ_ X).hom = (λ_ X).hom := by
   rw [← whiskerLeft_iff, whiskerLeft_comp, braiding_rightUnitor_aux₂]
 
-@[reassoc, simp]
+@[to_additive (attr := simp), reassoc]
 theorem braiding_tensorUnit_left (X : C) : (β_ (𝟙_ C) X).hom = (λ_ X).hom ≫ (ρ_ X).inv := by
   simp [← braiding_rightUnitor]
+attribute [to_additive] braiding_tensorUnit_left_assoc
 
-@[reassoc, simp]
+@[to_additive (attr := simp), reassoc]
 theorem braiding_inv_tensorUnit_left (X : C) : (β_ (𝟙_ C) X).inv = (ρ_ X).hom ≫ (λ_ X).inv := by
   rw [Iso.inv_ext]
   rw [braiding_tensorUnit_left]
   monoidal
+attribute [to_additive] braiding_inv_tensorUnit_left_assoc
 
-@[reassoc]
+@[reassoc (attr := to_additive)]
 theorem leftUnitor_inv_braiding (X : C) : (λ_ X).inv ≫ (β_ (𝟙_ C) X).hom = (ρ_ X).inv := by
   simp
 
-@[reassoc]
+@[reassoc (attr := to_additive)]
 theorem rightUnitor_inv_braiding (X : C) : (ρ_ X).inv ≫ (β_ X (𝟙_ C)).hom = (λ_ X).inv := by
   apply (cancel_mono (λ_ X).hom).1
   simp only [assoc, braiding_leftUnitor, Iso.inv_hom_id]
 
-@[reassoc, simp]
+@[to_additive (attr := simp), reassoc]
 theorem braiding_tensorUnit_right (X : C) : (β_ X (𝟙_ C)).hom = (ρ_ X).hom ≫ (λ_ X).inv := by
   simp [← rightUnitor_inv_braiding]
+attribute [to_additive] braiding_tensorUnit_right_assoc
 
-@[reassoc, simp]
+@[to_additive (attr := simp), reassoc]
 theorem braiding_inv_tensorUnit_right (X : C) : (β_ X (𝟙_ C)).inv = (λ_ X).hom ≫ (ρ_ X).inv := by
   rw [Iso.inv_ext]
   rw [braiding_tensorUnit_right]
   monoidal
+attribute [to_additive] braiding_inv_tensorUnit_right_assoc
 
 end
 
@@ -409,8 +421,18 @@ class SymmetricCategory (C : Type u) [Category.{v} C] [MonoidalCategory.{v} C] e
   -- braiding symmetric:
   symmetry : ∀ X Y : C, (β_ X Y).hom ≫ (β_ Y X).hom = 𝟙 (X ⊗ Y) := by cat_disch
 
-attribute [reassoc (attr := simp)] SymmetricCategory.symmetry
+/--
+A symmetric additive monoidal category is a braided additive monoidal category for which the
+braiding is symmetric. -/
+class AddSymmetricCategory (C : Type u) [Category.{v} C] [AddMonoidalCategory.{v} C] extends
+    AddBraidedCategory.{v} C where
+  -- braiding symmetric:
+  add_symmetry : ∀ X Y : C, (β⁺ X Y).hom ≫ (β⁺ Y X).hom = 𝟙 (X ⊕ₒ Y) := by cat_disch
 
+attribute [to_additive AddSymmetricCategory] SymmetricCategory
+attribute [reassoc (attr := to_additive (attr := simp))] SymmetricCategory.symmetry
+
+@[to_additive]
 lemma SymmetricCategory.braiding_swap_eq_inv_braiding {C : Type u₁}
     [Category.{v₁} C] [MonoidalCategory C] [SymmetricCategory C] (X Y : C) :
     (β_ Y X).hom = (β_ X Y).inv := Iso.inv_ext' (symmetry X Y)
