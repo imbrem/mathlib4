@@ -37,7 +37,8 @@ universe v v₁ v₂ v₃ u u₁ u₂ u₃
 
 namespace CategoryTheory
 
-open Category MonoidalCategory Functor.LaxMonoidal Functor.OplaxMonoidal Functor.Monoidal
+open Category MonoidalCategory AddMonoidalCategory
+open Functor.LaxMonoidal Functor.OplaxMonoidal Functor.Monoidal
 
 /-- A braided monoidal category is a monoidal category equipped with a braiding isomorphism
 `β_ X Y : X ⊗ Y ≅ Y ⊗ X`
@@ -68,21 +69,56 @@ class BraidedCategory (C : Type u) [Category.{v} C] [MonoidalCategory.{v} C] whe
         (X ◁ (braiding Y Z).hom) ≫ (α_ X Z Y).inv ≫ ((braiding X Z).hom ▷ Y) := by
     cat_disch
 
-attribute [reassoc (attr := simp)]
+/-- A braided additive monoidal category is an additive monoidal category equipped with a braiding
+isomorphism `β⁺ X Y : X ⊕ Y ≅ Y ⊕ X`
+which is natural in both arguments,
+and also satisfies the two hexagon identities.
+-/
+class AddBraidedCategory (C : Type u) [Category.{v} C] [AddMonoidalCategory.{v} C] where
+  /-- The additive braiding natural isomorphism. -/
+  addBraiding : ∀ X Y : C, X ⊕ₒ Y ≅ Y ⊕ₒ X
+  addBraiding_naturality_right :
+    ∀ (X : C) {Y Z : C} (f : Y ⟶ Z),
+      X ◁⁺ f ≫ (addBraiding X Z).hom = (addBraiding X Y).hom ≫ f ▷⁺ X := by
+    cat_disch
+  addBraiding_naturality_left :
+    ∀ {X Y : C} (f : X ⟶ Y) (Z : C),
+      f ▷⁺ Z ≫ (addBraiding Y Z).hom = (addBraiding X Z).hom ≫ Z ◁⁺ f := by
+    cat_disch
+  /-- The first hexagon identity. -/
+  add_hexagon_forward :
+    ∀ X Y Z : C,
+      (α⁺ X Y Z).hom ≫ (addBraiding X (Y ⊕ₒ Z)).hom ≫ (α⁺ Y Z X).hom =
+        ((addBraiding X Y).hom ▷⁺ Z) ≫ (α⁺ Y X Z).hom ≫ (Y ◁⁺ (addBraiding X Z).hom) := by
+    cat_disch
+  /-- The second hexagon identity. -/
+  add_hexagon_reverse :
+    ∀ X Y Z : C,
+      (α⁺ X Y Z).inv ≫ (addBraiding (X ⊕ₒ Y) Z).hom ≫ (α⁺ Z X Y).inv =
+        (X ◁⁺ (addBraiding Y Z).hom) ≫ (α⁺ X Z Y).inv ≫ ((addBraiding X Z).hom ▷⁺ Y) := by
+    cat_disch
+
+attribute [to_additive AddBraidedCategory] BraidedCategory
+
+attribute [reassoc (attr := to_additive (attr := simp))]
   BraidedCategory.braiding_naturality_left
   BraidedCategory.braiding_naturality_right
-attribute [reassoc] BraidedCategory.hexagon_forward BraidedCategory.hexagon_reverse
+attribute [reassoc (attr := to_additive)]
+  BraidedCategory.hexagon_forward BraidedCategory.hexagon_reverse
 
-open BraidedCategory
+open BraidedCategory AddBraidedCategory
 
 @[inherit_doc]
 notation "β_" => BraidedCategory.braiding
+
+@[inherit_doc]
+notation "β⁺" => AddBraidedCategory.addBraiding
 
 namespace BraidedCategory
 
 variable {C : Type u} [Category.{v} C] [MonoidalCategory.{v} C] [BraidedCategory.{v} C]
 
-@[simp, reassoc]
+@[to_additive (attr := simp), reassoc]
 theorem braiding_tensor_left_hom (X Y Z : C) :
     (β_ (X ⊗ Y) Z).hom  =
       (α_ X Y Z).hom ≫ X ◁ (β_ Y Z).hom ≫ (α_ X Z Y).inv ≫
@@ -90,10 +126,11 @@ theorem braiding_tensor_left_hom (X Y Z : C) :
   apply (cancel_epi (α_ X Y Z).inv).1
   apply (cancel_mono (α_ Z X Y).inv).1
   simp [hexagon_reverse]
+attribute [to_additive] braiding_tensor_left_hom_assoc
 
 @[deprecated (since := "2025-06-24")] alias braiding_tensor_left := braiding_tensor_left_hom
 
-@[simp, reassoc]
+@[to_additive (attr := simp), reassoc]
 theorem braiding_tensor_right_hom (X Y Z : C) :
     (β_ X (Y ⊗ Z)).hom  =
       (α_ X Y Z).inv ≫ (β_ X Y).hom ▷ Z ≫ (α_ Y X Z).hom ≫
@@ -101,57 +138,60 @@ theorem braiding_tensor_right_hom (X Y Z : C) :
   apply (cancel_epi (α_ X Y Z).hom).1
   apply (cancel_mono (α_ Y Z X).hom).1
   simp [hexagon_forward]
+attribute [to_additive] braiding_tensor_right_hom_assoc
 
 @[deprecated (since := "2025-06-24")] alias braiding_tensor_right := braiding_tensor_right_hom
 
-@[simp, reassoc]
+@[to_additive (attr := simp), reassoc]
 theorem braiding_tensor_left_inv (X Y Z : C) :
     (β_ (X ⊗ Y) Z).inv  =
       (α_ Z X Y).inv ≫ (β_ X Z).inv ▷ Y ≫ (α_ X Z Y).hom ≫
         X ◁ (β_ Y Z).inv ≫ (α_ X Y Z).inv :=
   eq_of_inv_eq_inv (by simp)
+attribute [to_additive] braiding_tensor_left_inv_assoc
 
 @[deprecated (since := "2025-06-24")] alias braiding_inv_tensor_left := braiding_tensor_left_inv
 
-@[simp, reassoc]
+@[to_additive (attr := simp), reassoc]
 theorem braiding_tensor_right_inv (X Y Z : C) :
     (β_ X (Y ⊗ Z)).inv  =
       (α_ Y Z X).hom ≫ Y ◁ (β_ X Z).inv ≫ (α_ Y X Z).inv ≫
         (β_ X Y).inv ▷ Z ≫ (α_ X Y Z).hom :=
   eq_of_inv_eq_inv (by simp)
+attribute [to_additive] braiding_tensor_right_inv_assoc
 
 @[deprecated (since := "2025-06-24")] alias braiding_inv_tensor_right := braiding_tensor_right_inv
 
-@[reassoc (attr := simp)]
+@[reassoc (attr := to_additive (attr := simp))]
 theorem braiding_naturality {X X' Y Y' : C} (f : X ⟶ Y) (g : X' ⟶ Y') :
     (f ⊗ₘ g) ≫ (braiding Y Y').hom = (braiding X X').hom ≫ (g ⊗ₘ f) := by
   rw [tensorHom_def' f g, tensorHom_def g f]
   simp_rw [Category.assoc, braiding_naturality_left, braiding_naturality_right_assoc]
 
-@[reassoc (attr := simp)]
+@[reassoc (attr := to_additive (attr := simp))]
 theorem braiding_inv_naturality_right (X : C) {Y Z : C} (f : Y ⟶ Z) :
     X ◁ f ≫ (β_ Z X).inv = (β_ Y X).inv ≫ f ▷ X :=
   CommSq.w <| .vert_inv <| .mk <| braiding_naturality_left f X
 
-@[reassoc (attr := simp)]
+@[reassoc (attr := to_additive (attr := simp))]
 theorem braiding_inv_naturality_left {X Y : C} (f : X ⟶ Y) (Z : C) :
     f ▷ Z ≫ (β_ Z Y).inv = (β_ Z X).inv ≫ Z ◁ f :=
   CommSq.w <| .vert_inv <| .mk <| braiding_naturality_right Z f
 
-@[reassoc (attr := simp)]
+@[reassoc (attr := to_additive (attr := simp))]
 theorem braiding_inv_naturality {X X' Y Y' : C} (f : X ⟶ Y) (g : X' ⟶ Y') :
     (f ⊗ₘ g) ≫ (β_ Y' Y).inv = (β_ X' X).inv ≫ (g ⊗ₘ f) :=
   CommSq.w <| .vert_inv <| .mk <| braiding_naturality g f
 
 /-- In a braided monoidal category, the functors `tensorLeft X` and
 `tensorRight X` are isomorphic. -/
-@[simps]
+@[to_additive (attr := simps)]
 def tensorLeftIsoTensorRight (X : C) :
     tensorLeft X ≅ tensorRight X where
   hom := { app Y := (β_ X Y).hom }
   inv := { app Y := (β_ X Y).inv }
 
-@[reassoc]
+@[reassoc (attr := to_additive)]
 theorem yang_baxter (X Y Z : C) :
     (α_ X Y Z).inv ≫ (β_ X Y).hom ▷ Z ≫ (α_ Y X Z).hom ≫
     Y ◁ (β_ X Z).hom ≫ (α_ Y Z X).inv ≫ (β_ Y Z).hom ▷ X ≫ (α_ Z Y X).hom =
